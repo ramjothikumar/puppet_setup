@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -xe
 puppet_master_ip="$1"
 if [ "$puppet_master_ip" == "" ]; then
     echo "Usage: install_puppetagent.sh <puppet_master_ip>"
@@ -25,7 +25,7 @@ echo "HostOS Flavor: $hostOS"
 
 # Install Puppet
 if [[ "$hostOS" =~ "Ubuntu" ]]; then
-    $sudo apt-get update -y && apt-get install -y puppet
+    $sudo apt-get update -y && $sudo apt-get install -y puppet
     $sudo sed -i 's/START=no/START=yes/' /etc/default/puppet
 else
     $sudo yum install -y puppet
@@ -33,7 +33,7 @@ else
 fi
 echo "[agent]" | $sudo tee --append /etc/puppet/puppet.conf
 echo "server = $puppet_master_ip" | $sudo tee --append /etc/puppet/puppet.conf
-echo "# Host config for Puppet Master" | sudo tee --append /etc/hosts 2> /dev/null && \
+echo "# Host config for Puppet Master" | $sudo tee --append /etc/hosts 2> /dev/null && \
 echo "$puppet_master_ip puppet" | $sudo tee --append /etc/hosts
 $sudo puppet agent --enable
 $sudo service puppet restart
