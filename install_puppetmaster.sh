@@ -7,7 +7,6 @@ if [ "$user" == "root" ]; then
 else
     sudo="sudo"
 fi
-$sudo hostname puppetserver
 $sudo yum install -y puppet-server
 $sudo chkconfig puppetmaster on
 $sudo service puppetmaster start
