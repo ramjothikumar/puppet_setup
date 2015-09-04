@@ -30,7 +30,8 @@ else
     $sudo yum install -y puppet
     $sudo chkconfig puppet on
 fi
-$sudo echo "$puppet_master_ip puppet" >> /etc/hosts
+echo "# Host config for Puppet Master" | sudo tee --append /etc/hosts 2> /dev/null && \
+echo "$puppet_master_ip puppet" | $sudo tee --append /etc/hosts
 $sudo service puppet restart
 $sudo puppet agent --enable
 $sudo puppet agent --test
