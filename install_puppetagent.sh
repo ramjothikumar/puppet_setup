@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 puppet_master_ip="$1"
 if [ "$puppet_master_ip" == "" ]; then
