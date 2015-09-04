@@ -26,12 +26,15 @@ echo "HostOS Flavor: $hostOS"
 # Install Puppet
 if [[ "$hostOS" =~ "Ubuntu" ]]; then
     $sudo apt-get update -y && apt-get install -y puppet
+    echo "[agent]" | $sudo tee --append /etc/puppet/puppet.conf
+    echo "server = $puppet_master_ip" | $sudo tee --append /etc/puppet/puppet.conf
+    $sudo sed -i 's/START=no/START=yes/' /etc/default/puppet
 else
     $sudo yum install -y puppet
     $sudo chkconfig puppet on
+    echo "# Host config for Puppet Master" | sudo tee --append /etc/hosts 2> /dev/null && \
+    echo "$puppet_master_ip puppet" | $sudo tee --append /etc/hosts
 fi
-echo "# Host config for Puppet Master" | sudo tee --append /etc/hosts 2> /dev/null && \
-echo "$puppet_master_ip puppet" | $sudo tee --append /etc/hosts
-$sudo service puppet restart
 $sudo puppet agent --enable
+$sudo service puppet restart
 $sudo puppet agent --test
