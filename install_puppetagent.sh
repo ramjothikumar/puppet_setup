@@ -28,7 +28,11 @@ if [[ "$hostOS" =~ "Ubuntu" ]]; then
     $sudo apt-get update -y && $sudo apt-get install -y puppet
     $sudo sed -i 's/START=no/START=yes/' /etc/default/puppet
 else
-    $sudo yum install -y puppet
+    if [[ "$hostOS" =~ "Amazon Linux" ]]; then
+       $sudo yum install -y puppet3
+    else
+       $sudo yum install -y puppet
+    fi
     $sudo chkconfig puppet on
 fi
 echo "[agent]" | $sudo tee --append /etc/puppet/puppet.conf

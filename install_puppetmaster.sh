@@ -27,7 +27,11 @@ echo "HostOS Flavor: $hostOS"
 if [[ "$hostOS" =~ "Ubuntu" ]]; then
     $sudo apt-get install -y puppetmaster
 else
-    $sudo yum install -y puppet-server
+    if [[ "$hostOS" =~ "Amazon Linux" ]]; then
+        $sudo yum install -y puppet3-server
+    else 
+        $sudo yum install -y puppet-server
+    fi
     $sudo chkconfig puppetmaster on
 fi
 $sudo service puppetmaster start
