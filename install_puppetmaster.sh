@@ -1,13 +1,5 @@
 #!/bin/bash
 
-puppet_master_ip="$1"
-if [ "$puppet_master_ip" == "" ]; then
-    echo "Usage: install_puppetagent.sh <puppet_master_ip>"
-    echo "Puppet Master IP Address not Provided. Exiting"
-    exit 0
-fi
-echo "Puppet Master IP: $puppet_master_ip"
-
 # Determine if the script is being run by root or not
 user=$(whoami)
 if [ "$user" == "root" ]; then
@@ -34,4 +26,7 @@ else
     fi
     $sudo chkconfig puppetmaster on
 fi
+
+$sudo touch /etc/puppet/autosign.conf
+$sudo echo "*" > /etc/puppet/autosign.conf
 $sudo service puppetmaster start
