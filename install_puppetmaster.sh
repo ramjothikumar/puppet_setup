@@ -11,7 +11,7 @@ fi
 # Determine hostOS
 hostOS=$(cat /etc/*-release | grep PRETTY_NAME | grep -o '".*"' | sed 's/"//g' | sed -e 's/([^()]*)//g' | sed -e 's/[[:space:]]*$//')
 if [ -f /etc/redhat-release ]; then
-    hostOS=$(head -c 16 /etc/redhat-release)
+    hostOS=$(head -n 1 /etc/redhat-release)
 fi
 echo "HostOS Flavor: $hostOS"
 
