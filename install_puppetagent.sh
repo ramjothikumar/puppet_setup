@@ -28,13 +28,19 @@ if [[ "$hostOS" =~ "Ubuntu" ]]; then
     $sudo apt-get update -y && $sudo apt-get install -y puppet
     $sudo sed -i 's/START=no/START=yes/' /etc/default/puppet
 else
-    $sudo yum install -y puppet
+    if [[ "$hostOS" =~ "Amazon Linux" ]]; then
+       $sudo yum install -y puppet3
+    else
+       $sudo yum install -y puppet
+    fi
     $sudo chkconfig puppet on
 fi
 echo "[agent]" | $sudo tee --append /etc/puppet/puppet.conf
 echo "server = $puppet_master_ip" | $sudo tee --append /etc/puppet/puppet.conf
+echo "[main]" | $sudo tee --append /etc/puppet/puppet.conf
+echo "runinterval = 30" | $sudo tee --append /etc/puppet/puppet.conf
 echo "# Host config for Puppet Master" | $sudo tee --append /etc/hosts 2> /dev/null && \
 echo "$puppet_master_ip puppet" | $sudo tee --append /etc/hosts
 $sudo puppet agent --enable
-$sudo service puppet restart
+$sudo service puppet start
 $sudo puppet agent --test
