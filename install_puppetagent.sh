@@ -10,7 +10,7 @@ echo "Puppet Master IP: $puppet_master_ip"
 
 # Determine if the script is being run by root or not
 user=$(whoami)
-if [ "$user" == "root" ]; then 
+if [ "$user" == "root" ]; then
     sudo=""
 else
     sudo="sudo"
@@ -19,28 +19,58 @@ fi
 # Determine hostOS
 hostOS=$(cat /etc/*-release | grep PRETTY_NAME | grep -o '".*"' | sed 's/"//g' | sed -e 's/([^()]*)//g' | sed -e 's/[[:space:]]*$//')
 if [ -f /etc/redhat-release ]; then
-    hostOS=$(head -c 16 /etc/redhat-release)
+    #hostOS=$(head -c 16 /etc/redhat-release)
+    hostOS=$(head -n 1 /etc/redhat-release)
 fi
 echo "HostOS Flavor: $hostOS"
 
-# Install Puppet
-if [[ "$hostOS" =~ "Ubuntu" ]]; then
-    $sudo apt-get update -y && $sudo apt-get install -y puppet
-    $sudo sed -i 's/START=no/START=yes/' /etc/default/puppet
-else
-    if [[ "$hostOS" =~ "Amazon Linux" ]]; then
-       $sudo yum install -y puppet3
-    else
-       $sudo yum install -y puppet
-    fi
-    $sudo chkconfig puppet on
-fi
-echo "[agent]" | $sudo tee --append /etc/puppet/puppet.conf
-echo "server = $puppet_master_ip" | $sudo tee --append /etc/puppet/puppet.conf
-echo "[main]" | $sudo tee --append /etc/puppet/puppet.conf
-echo "runinterval = 30" | $sudo tee --append /etc/puppet/puppet.conf
-echo "# Host config for Puppet Master" | $sudo tee --append /etc/hosts 2> /dev/null && \
-echo "$puppet_master_ip puppet" | $sudo tee --append /etc/hosts
-$sudo puppet agent --enable
-$sudo service puppet start
-$sudo puppet agent --test
+#take "hostOS" and match it up to OS and assign tasks
+perform_install_for_os()
+{
+case $hostOS in
+    "Amazon Linux AMI 2014.09" | "Amazon Linux AMI 2015.03")
+        $sudo yum install -y puppet3
+        $sudo chkconfig puppet on
+        post_install_steps
+    ;;
+    "Ubuntu 15.04"* | "Ubuntu 14.04"* | "Ubuntu 12.04"*)
+        $sudo apt-get update -y && $sudo apt-get install -y puppet
+        post_install_steps
+    ;;
+    "CentOS release 7"* | "CentOS Linux release 7"*)
+        rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+        $sudo yum install -y puppet
+        $sudo chkconfig puppet on
+        post_install_steps
+    ;;
+    "CentOS release 6"* | "CentOS Linux release 6"*)
+        rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-6.noarch.rpm
+        $sudo yum install -y puppet
+        $sudo chkconfig puppet on
+        post_install_steps
+    ;;
+    "CentOS release 5"* | "CentOS Linux release 5"*)
+        rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-5.noarch.rpm
+        $sudo yum install -y puppet
+        $sudo chkconfig puppet on
+        post_install_steps
+    ;;
+    *)
+esac
+}
+
+# Post install steps to configure puppet
+post_install_steps()
+{
+    echo "[agent]" | $sudo tee --append /etc/puppet/puppet.conf
+    echo "server = $puppet_master_ip" | $sudo tee --append /etc/puppet/puppet.conf
+    echo "[main]" | $sudo tee --append /etc/puppet/puppet.conf
+    echo "runinterval = 30" | $sudo tee --append /etc/puppet/puppet.conf
+    echo "# Host config for Puppet Master" | $sudo tee --append /etc/hosts 2> /dev/null && \
+    echo "$puppet_master_ip puppet" | $sudo tee --append /etc/hosts
+    $sudo puppet agent --enable
+    $sudo service puppet start
+    $sudo puppet agent --test
+}
+
+perform_install_for_os
