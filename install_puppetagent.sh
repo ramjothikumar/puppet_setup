@@ -1,5 +1,7 @@
 #!/bin/bash
 set -xe
+
+# Handle puppet master ip argument
 puppet_master_ip="$1"
 if [ "$puppet_master_ip" == "" ]; then
     echo "Usage: install_puppetagent.sh <puppet_master_ip>"
@@ -19,7 +21,6 @@ fi
 # Determine hostOS
 hostOS=$(cat /etc/*-release | grep PRETTY_NAME | grep -o '".*"' | sed 's/"//g' | sed -e 's/([^()]*)//g' | sed -e 's/[[:space:]]*$//')
 if [ -f /etc/redhat-release ]; then
-    #hostOS=$(head -c 16 /etc/redhat-release)
     hostOS=$(head -n 1 /etc/redhat-release)
 fi
 echo "HostOS Flavor: $hostOS"
@@ -33,7 +34,7 @@ case $hostOS in
         $sudo chkconfig puppet on
         post_install_steps
     ;;
-    "Ubuntu 15.04"* | "Ubuntu 14.04"* | "Ubuntu 12.04"*)
+    "Ubuntu"*)
         $sudo apt-get update -y && $sudo apt-get install -y puppet
         post_install_steps
     ;;
